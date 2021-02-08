@@ -13,13 +13,14 @@ type RpcClient struct {
 	config *conf.LocalConf
 	cc *cloudConfig
 	ControlCenterConn *tcp.Connection
-	ServerClient map[string]*tcp.Connection
+	// 业务服务长连接 key =
+	ServerClient map[string][]*tcp.Connection
 }
 
 func NewRpcClient(config *conf.LocalConf) *RpcClient {
 	return &RpcClient{
 		config: config,
-		ServerClient: map[string]*tcp.Connection{},
+		ServerClient: make(map[string][]*tcp.Connection),
 	}
 }
 
@@ -27,21 +28,21 @@ func (rc *RpcClient) Start() {
 	// 发送 http 请求获取 config file
 	cc := rc.getServerConfig()
 	rc.cc = cc
-	// 连接 控制中心
+	// 连接控制中心
 	conn := tcp.CreateSocket(cc.ControlCenterHost)
 	rc.ControlCenterConn = conn
-	// 定义 Packet
-	p := tcp.NewPacket()
 	// TODO: 鉴权？内部服务是否需要鉴权
+	// 发送注册信息
+	p := tcp.NewRegisterMessage(rc.config.Client.ServerName, rc.config.Client.ServerVersion)
 	// 注册到控制中心
 	err := conn.Send(p)
 	if err != nil {
 		logrus.Fatalf("send server message error [%v]", err)
 	}
-	//
+	// 获取要交互的服务以及相关配置信息
 }
 
-// 存储在配置中心的配置
+// 存储在配置中心的云端配置
 type cloudConfig struct {
 	ControlCenterHost string `json:"control_center_host"`
 }
