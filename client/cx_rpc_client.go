@@ -33,12 +33,12 @@ func (rc *RpcClient) Start() {
 	rc.ControlCenterConn = conn
 	// TODO: 鉴权？内部服务是否需要鉴权
 	// 发送注册信息
-	p := tcp.NewRegisterMessage(rc.config.Client.ServerName, rc.config.Client.ServerVersion)
+	_ = tcp.NewRegisterMessage(rc.config.Client.ServerName, rc.config.Client.ServerVersion)
 	// 注册到控制中心
-	err := conn.Send(p)
-	if err != nil {
-		logrus.Fatalf("send server message error [%v]", err)
-	}
+	//err := conn.Send(p)
+	//if err != nil {
+	//	logrus.Fatalf("send server message error [%v]", err)
+	//}
 	// 获取要交互的服务以及相关配置信息
 }
 
